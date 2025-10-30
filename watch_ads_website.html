@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="my">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Watch ADS Demo (US Only)</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#06b6d4;--glass:rgba(255,255,255,0.04)}
+    html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,'Noto Sans Myanmar',sans-serif;background:linear-gradient(180deg,#031021 0%,#071428 100%);color:#fff}
+    .wrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:24px}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,0.03), rgba(255,255,255,0.02));border-radius:14px;padding:36px;width:420px;box-shadow:0 8px 30px rgba(2,6,23,0.6);text-align:center}
+    h1{margin:0 0 12px 0;font-size:20px}
+    p{margin:0 0 20px 0;opacity:0.8}
+    .btn{display:inline-block;padding:14px 22px;border-radius:10px;background:var(--accent);color:#042027;font-weight:600;text-decoration:none;cursor:pointer;border:none;font-size:16px}
+    .overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(2,6,23,0.7),rgba(2,6,23,0.85));z-index:1000}
+    .adbox{width:min(900px,95%);max-width:1000px;background:var(--card);border-radius:10px;padding:12px;box-shadow:0 10px 40px rgba(2,6,23,0.6);display:flex;flex-direction:column;gap:8px}
+    .ad-header{display:flex;align-items:center;justify-content:space-between;padding:6px 8px}
+    .ad-title{font-weight:700}
+    .close-btn{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 10px;border-radius:8px;color:#fff;cursor:pointer;opacity:0.9}
+    .close-btn[disabled]{opacity:0.4;cursor:not-allowed}
+    .ad-video{width:100%;height:520px;background:#000;border-radius:8px;overflow:hidden}
+    video{width:100%;height:100%;display:block}
+    .ad-footer{display:flex;align-items:center;justify-content:space-between;padding:8px}
+    .timer{font-size:14px;opacity:0.9}
+    @media (max-width:640px){.adbox{height:85vh}.ad-video{height:calc(85vh - 120px)}}
+  </style>
+</head>
+<body>
+  <div class="wrap" id="content">
+    <div class="card">
+      <h1>Watch ADS (Demo)</h1>
+      <p>"Watch ADS" ခလုတ်ကို နှိပ်လျှင် ad network ထံမှ video ad တစ်ခုထုတ်ပြမည်။ အချိန် ၁ မိနစ်ကြာပါက Close ခလုတ်ဖွင့်လိမ့်မည်။</p>
+      <button id="watchBtn" class="btn">Watch ADS</button>
+    </div>
+  </div>
+
+  <div id="overlay" class="overlay" aria-hidden="true">
+    <div class="adbox" role="dialog" aria-modal="true">
+      <div class="ad-header">
+        <div class="ad-title">Advertisement</div>
+        <button id="closeBtn" class="close-btn" disabled>Close</button>
+      </div>
+      <div class="ad-video" id="adContainer"></div>
+      <div class="ad-footer">
+        <div class="timer" id="timerText">Time left: 01:00</div>
+        <div style="font-size:13px;opacity:0.85">Provided by ad network</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const adSources = [
+      { type: 'video', src: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4' }
+    ];
+
+    const watchBtn = document.getElementById('watchBtn');
+    const overlay = document.getElementById('overlay');
+    const adContainer = document.getElementById('adContainer');
+    const closeBtn = document.getElementById('closeBtn');
+    const timerText = document.getElementById('timerText');
+
+    let adVideoEl = null;
+    let countdownInterval = null;
+
+    function formatTime(sec){const m=Math.floor(sec/60).toString().padStart(2,'0');const s=(sec%60).toString().padStart(2,'0');return `${m}:${s}`;}
+    function showOverlay(){overlay.style.display='flex';overlay.setAttribute('aria-hidden','false');}
+    function hideOverlay(){overlay.style.display='none';overlay.setAttribute('aria-hidden','true');if(adVideoEl){adVideoEl.pause();adVideoEl.remove();adVideoEl=null;}timerText.textContent='Time left: 00:00';clearInterval(countdownInterval);closeBtn.disabled=true;}
+    function insertVideo(src){adContainer.innerHTML='';const v=document.createElement('video');v.setAttribute('controls','');v.src=src;v.autoplay=true;adContainer.appendChild(v);adVideoEl=v;return v;}
+    function startCountdown(seconds){let left=seconds;timerText.textContent='Time left: '+formatTime(left);closeBtn.disabled=true;clearInterval(countdownInterval);countdownInterval=setInterval(()=>{left--;timerText.textContent='Time left: '+formatTime(left);if(left<=0){clearInterval(countdownInterval);closeBtn.disabled=false;}},1000);}
+    function playAd(){insertVideo(adSources[0].src);startCountdown(60);showOverlay();}
+
+    watchBtn.addEventListener('click',()=>{playAd();});
+    closeBtn.addEventListener('click',()=>{if(closeBtn.disabled)return;hideOverlay();});
+    document.addEventListener('keydown',(e)=>{if(e.key==='Escape'&&!closeBtn.disabled&&overlay.style.display==='flex'){closeBtn.click();}});
+  </script>
+</body>
+</html>
